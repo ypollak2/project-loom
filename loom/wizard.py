@@ -1,6 +1,5 @@
 """Interactive wizard for loom init command."""
 
-from pathlib import Path
 
 import questionary
 from rich.console import Console

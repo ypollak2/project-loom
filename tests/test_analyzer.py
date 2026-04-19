@@ -1,6 +1,5 @@
 """Tests for loom.analyzer module."""
 
-import pytest
 
 from loom.analyzer import blast_radius, check_boundaries, find_dependents, get_impact_zones, trace_chain
 from loom.config import (

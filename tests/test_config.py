@@ -1,12 +1,11 @@
 """Tests for loom.config module."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from loom.config import Boundary, Language, LoomConfig, RiskLevel, Repo
+from loom.config import Boundary, Language, LoomConfig, Repo
 
 
 class TestRepo:

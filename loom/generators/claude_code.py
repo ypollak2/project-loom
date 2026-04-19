@@ -1,6 +1,6 @@
 """Generator for Claude Code AI tool configuration."""
 
-from loom.config import ImpactZone, LoomConfig
+from loom.config import LoomConfig
 
 
 def generate_claude_code(config: LoomConfig) -> str:

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
-from loom.analyzer import blast_radius, check_boundaries, find_dependents, trace_chain
+from loom.analyzer import blast_radius, check_boundaries, trace_chain
 from loom.config import LoomConfig
 from loom.workspace import apply_workspace
 from loom.wizard import run_init_wizard
@@ -126,16 +126,16 @@ def test_all(config_path: str = typer.Argument("loom.yaml", help="Path to loom.y
             )
 
             if result.returncode == 0:
-                console.print(f"[green]  ✓ Passed[/green]")
+                console.print("[green]  ✓ Passed[/green]")
             else:
-                console.print(f"[red]  ✗ Failed[/red]")
+                console.print("[red]  ✗ Failed[/red]")
                 failed.append(repo.name)
 
         if failed:
             console.print(f"\n[red]Failed: {', '.join(failed)}[/red]")
             raise typer.Exit(1)
         else:
-            console.print(f"\n[green]All tests passed[/green]")
+            console.print("\n[green]All tests passed[/green]")
 
     except FileNotFoundError:
         console.print(f"[red]✗ Configuration file not found: {config_path}[/red]")
@@ -171,9 +171,9 @@ def install(config_path: str = typer.Argument("loom.yaml", help="Path to loom.ya
             )
 
             if result.returncode == 0:
-                console.print(f"[green]  ✓ Installed[/green]")
+                console.print("[green]  ✓ Installed[/green]")
             else:
-                console.print(f"[red]  ✗ Failed[/red]")
+                console.print("[red]  ✗ Failed[/red]")
 
     except FileNotFoundError:
         console.print(f"[red]✗ Configuration file not found: {config_path}[/red]")
@@ -294,7 +294,7 @@ def validate(config_path: str = typer.Argument("loom.yaml", help="Path to loom.y
     """
     try:
         config = LoomConfig.load_yaml(config_path)
-        console.print(f"[bold green]✓ Configuration valid[/bold green]")
+        console.print("[bold green]✓ Configuration valid[/bold green]")
         console.print(f"  Workspace: {config.name}")
         console.print(f"  Repos: {len(config.repos)}")
         if config.dependencies:
@@ -305,7 +305,7 @@ def validate(config_path: str = typer.Argument("loom.yaml", help="Path to loom.y
         console.print(f"[red]✗ Configuration file not found: {config_path}[/red]")
         raise typer.Exit(1)
     except ValidationError as e:
-        console.print(f"[red]✗ Configuration validation error[/red]")
+        console.print("[red]✗ Configuration validation error[/red]")
         for error in e.errors():
             console.print(f"  {error['loc'][0]}: {error['msg']}")
         raise typer.Exit(1)
@@ -423,7 +423,7 @@ def sync_commit(
             else:
                 console.print(f"[red]✗ {repo.name}: commit failed[/red]")
 
-        console.print(f"\n[bold]Summary[/bold]")
+        console.print("\n[bold]Summary[/bold]")
         console.print(f"  Committed: {len(committed)}")
         console.print(f"  Skipped: {len(skipped)}")
 
@@ -447,7 +447,7 @@ def pre_change(
     """
     try:
         config = LoomConfig.load_yaml(config_path)
-        console.print(f"\n[bold]Pre-Change Safety Check[/bold]")
+        console.print("\n[bold]Pre-Change Safety Check[/bold]")
         console.print(f"[dim]File: {file_path}[/dim]\n")
 
         # Find impact zones affecting this file
@@ -498,7 +498,7 @@ def post_change(
     """
     try:
         config = LoomConfig.load_yaml(config_path)
-        console.print(f"\n[bold]Post-Change Test Validation[/bold]")
+        console.print("\n[bold]Post-Change Test Validation[/bold]")
         console.print(f"[dim]File: {file_path}[/dim]\n")
 
         # Find affected repositories
@@ -539,16 +539,16 @@ def post_change(
                 )
 
                 if result.returncode == 0:
-                    console.print(f"[green]  ✓ Passed[/green]\n")
+                    console.print("[green]  ✓ Passed[/green]\n")
                 else:
-                    console.print(f"[red]  ✗ Failed[/red]\n")
+                    console.print("[red]  ✗ Failed[/red]\n")
                     failed.append(repo_name)
 
             if failed:
                 console.print(f"[red]✗ Tests failed in: {', '.join(failed)}[/red]")
                 raise typer.Exit(1)
             else:
-                console.print(f"[green]✓ All affected tests passed[/green]")
+                console.print("[green]✓ All affected tests passed[/green]")
         else:
             console.print("[green]✓ No affected repositories[/green]")
             console.print("Changes are isolated.")
@@ -575,7 +575,7 @@ def serve(
         config = LoomConfig.load_yaml(config_path)
         console.print(f"[bold green]✓ Configuration loaded: {config.name}[/bold green]")
 
-        from loom.mcp_server import server, start_server
+        from loom.mcp_server import server
 
         console.print("[bold]Starting MCP server...[/bold]")
         console.print(f"[dim]Config: {config_path}[/dim]")
@@ -623,7 +623,7 @@ def analyze_impact(
         config = LoomConfig.load_yaml(config_path)
         result = blast_radius(config, file_path)
 
-        console.print(f"\n[bold]Blast Radius Analysis[/bold]")
+        console.print("\n[bold]Blast Radius Analysis[/bold]")
         console.print(f"[dim]File: {file_path}[/dim]\n")
 
         # Show blast radius score
@@ -757,16 +757,16 @@ def check_boundary(
                 )
 
                 if result.returncode == 0:
-                    console.print(f"[green]✓ Passed[/green]")
+                    console.print("[green]✓ Passed[/green]")
                 else:
-                    console.print(f"[red]✗ Failed[/red]")
+                    console.print("[red]✗ Failed[/red]")
                     failed.append(boundary["interface"])
 
         if failed:
             console.print(f"\n[red]✗ Tests failed for: {', '.join(failed)}[/red]")
             raise typer.Exit(1)
         else:
-            console.print(f"\n[green]✓ All boundaries verified[/green]")
+            console.print("\n[green]✓ All boundaries verified[/green]")
 
     except FileNotFoundError:
         console.print(f"[red]✗ Configuration file not found: {config_path}[/red]")

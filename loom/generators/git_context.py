@@ -69,7 +69,7 @@ def generate_git_context(config: LoomConfig, workspace_path: Path) -> str:
             capture_output=True,
             text=True,
         )
-        unpushed_count = len([l for l in unpushed_result.stdout.strip().split("\n") if l])
+        unpushed_count = len([line for line in unpushed_result.stdout.strip().split("\n") if line])
 
         context["repos"].append({
             "name": repo.name,

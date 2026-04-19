@@ -169,7 +169,6 @@ class TestV030Generators:
 
     def test_generate_file_ownership_returns_json(self, simple_config):
         """Test file ownership generator returns valid JSON."""
-        from loom.generators import generate_file_ownership
         import json
 
         output = generate_file_ownership(simple_config)
@@ -181,7 +180,6 @@ class TestV030Generators:
 
     def test_generate_file_ownership_includes_impact_zones(self, simple_config):
         """Test file ownership maps zones to files."""
-        from loom.generators import generate_file_ownership
         import json
 
         output = generate_file_ownership(simple_config)
@@ -191,7 +189,6 @@ class TestV030Generators:
 
     def test_generate_git_context_returns_json(self, simple_config, tmp_path):
         """Test git context generator returns valid JSON."""
-        from loom.generators import generate_git_context
         import json
 
         output = generate_git_context(simple_config, tmp_path)
@@ -202,7 +199,6 @@ class TestV030Generators:
 
     def test_generate_session_templates_returns_json(self, simple_config):
         """Test session templates generator returns valid JSON."""
-        from loom.generators import generate_session_templates
         import json
 
         output = generate_session_templates(simple_config)
@@ -214,7 +210,6 @@ class TestV030Generators:
 
     def test_generate_session_templates_includes_generic_workflows(self, simple_config):
         """Test session templates include generic workflows."""
-        from loom.generators import generate_session_templates
         import json
 
         output = generate_session_templates(simple_config)
@@ -226,7 +221,6 @@ class TestV030Generators:
 
     def test_generate_session_templates_includes_high_risk_zones(self, simple_config):
         """Test session templates include HIGH-risk zone templates."""
-        from loom.generators import generate_session_templates
         import json
 
         output = generate_session_templates(simple_config)
@@ -239,7 +233,6 @@ class TestV030Generators:
 
     def test_generate_env_setup_returns_bash_script(self, simple_config):
         """Test env setup generator returns bash script."""
-        from loom.generators import generate_env_setup
 
         output = generate_env_setup(simple_config)
         assert isinstance(output, str)
@@ -248,7 +241,6 @@ class TestV030Generators:
 
     def test_generate_env_setup_validates_shared_env(self):
         """Test env setup validates shared environment variables."""
-        from loom.generators import generate_env_setup
 
         config = LoomConfig(
             name="Test",

@@ -121,7 +121,7 @@ def _generate_ai_configs(config: LoomConfig, workspace_path: Path) -> None:
         content = generate_claude_code(config)
         file_path = workspace_path / ".claudecode.md"
         file_path.write_text(content)
-        console.print(f"[green]✓ Generated .claudecode.md[/green]")
+        console.print("[green]✓ Generated .claudecode.md[/green]")
 
     # Codex
     if config.ai_tools and config.ai_tools.codex:
@@ -129,21 +129,21 @@ def _generate_ai_configs(config: LoomConfig, workspace_path: Path) -> None:
         codex_dir = workspace_path / ".codex-plugin"
         codex_dir.mkdir(exist_ok=True)
         (codex_dir / "loom-context.md").write_text(content)
-        console.print(f"[green]✓ Generated .codex-plugin/loom-context.md[/green]")
+        console.print("[green]✓ Generated .codex-plugin/loom-context.md[/green]")
 
     # Cursor
     if config.ai_tools and config.ai_tools.cursor:
         content = generate_cursor(config)
         file_path = workspace_path / ".cursorrules"
         file_path.write_text(content)
-        console.print(f"[green]✓ Generated .cursorrules[/green]")
+        console.print("[green]✓ Generated .cursorrules[/green]")
 
     # Aider
     if config.ai_tools and config.ai_tools.aider:
         content = generate_aider(config)
         file_path = workspace_path / "AGENTS.md"
         file_path.write_text(content)
-        console.print(f"[green]✓ Generated AGENTS.md[/green]")
+        console.print("[green]✓ Generated AGENTS.md[/green]")
 
 
 def _generate_claude_context_files(config: LoomConfig, workspace_path: Path) -> None:
@@ -159,26 +159,26 @@ def _generate_claude_context_files(config: LoomConfig, workspace_path: Path) -> 
     # Generate file-ownership.json
     content = generate_file_ownership(config)
     (claude_dir / "file-ownership.json").write_text(content)
-    console.print(f"[green]✓ Generated .claude/file-ownership.json[/green]")
+    console.print("[green]✓ Generated .claude/file-ownership.json[/green]")
 
     # Generate git-context.json with live git state
     content = generate_git_context(config, workspace_path)
     git_context = json.loads(content)
     git_context["generated_at"] = datetime.now().isoformat()
     (claude_dir / "git-context.json").write_text(json.dumps(git_context, indent=2))
-    console.print(f"[green]✓ Generated .claude/git-context.json[/green]")
+    console.print("[green]✓ Generated .claude/git-context.json[/green]")
 
     # Generate session-templates.json
     content = generate_session_templates(config)
     (claude_dir / "session-templates.json").write_text(content)
-    console.print(f"[green]✓ Generated .claude/session-templates.json[/green]")
+    console.print("[green]✓ Generated .claude/session-templates.json[/green]")
 
     # Generate env-setup.sh
     content = generate_env_setup(config)
     env_script = claude_dir / "env-setup.sh"
     env_script.write_text(content)
     env_script.chmod(0o755)
-    console.print(f"[green]✓ Generated .claude/env-setup.sh[/green]")
+    console.print("[green]✓ Generated .claude/env-setup.sh[/green]")
 
 
 def _generate_mcp_config(workspace_path: Path) -> None:
@@ -201,7 +201,7 @@ def _generate_mcp_config(workspace_path: Path) -> None:
 
     mcp_path = workspace_path / ".mcp.json"
     mcp_path.write_text(json.dumps(mcp_config, indent=2))
-    console.print(f"[green]✓ Generated .mcp.json[/green]")
+    console.print("[green]✓ Generated .mcp.json[/green]")
 
 
 def _generate_orchestration_script(config: LoomConfig, workspace_path: Path) -> None:
@@ -215,7 +215,7 @@ def _generate_orchestration_script(config: LoomConfig, workspace_path: Path) -> 
     script_path = workspace_path / "scripts" / "loom"
     script_path.write_text(script_content)
     script_path.chmod(0o755)
-    console.print(f"[green]✓ Generated scripts/loom[/green]")
+    console.print("[green]✓ Generated scripts/loom[/green]")
 
 
 def _build_orchestration_script(config: LoomConfig) -> str:
@@ -341,9 +341,9 @@ def _generate_documentation(config: LoomConfig, workspace_path: Path) -> None:
     (config_dir / "dependency-graph.json").write_text(
         json.dumps(dependency_graph, indent=2)
     )
-    console.print(f"[green]✓ Generated configs/dependency-graph.json[/green]")
+    console.print("[green]✓ Generated configs/dependency-graph.json[/green]")
 
     # Generate dependency graph HTML visualization (v0.5.0)
     html_content = generate_dependency_graph(config)
     (config_dir / "dependency-graph.html").write_text(html_content)
-    console.print(f"[green]✓ Generated configs/dependency-graph.html[/green]")
+    console.print("[green]✓ Generated configs/dependency-graph.html[/green]")

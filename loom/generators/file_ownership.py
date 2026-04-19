@@ -1,9 +1,8 @@
 """Generator for file ownership and risk mapping."""
 
 import json
-from pathlib import Path
 
-from loom.config import ImpactZone, LoomConfig
+from loom.config import LoomConfig
 
 
 def generate_file_ownership(config: LoomConfig) -> str:

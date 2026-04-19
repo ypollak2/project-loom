@@ -2,7 +2,6 @@
 
 import json
 import subprocess
-from pathlib import Path
 
 from fastmcp import FastMCP
 from pydantic import BaseModel
@@ -201,7 +200,7 @@ def loom_workspace_status(yaml_path: str) -> str:
                 capture_output=True,
                 text=True,
             )
-            unpushed = len([l for l in unpushed_result.stdout.strip().split("\n") if l])
+            unpushed = len([line for line in unpushed_result.stdout.strip().split("\n") if line])
 
             repos_status.append({
                 "name": repo.name,

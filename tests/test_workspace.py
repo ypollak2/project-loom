@@ -177,7 +177,6 @@ class TestGenerateClaudeContextFiles:
     def test_generate_claude_context_files(self, simple_config, tmp_path):
         """Test that all Claude context files are generated."""
         from loom.workspace import _generate_claude_context_files
-        import json
 
         workspace_path = tmp_path / "workspace"
         workspace_path.mkdir(parents=True)

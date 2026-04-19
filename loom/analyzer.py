@@ -140,11 +140,9 @@ def trace_chain(config: LoomConfig, repo: str) -> dict:
     while True:
         # Find next dependency
         next_repo = None
-        dep_description = ""
         for dep in config.dependencies or []:
             if dep.from_repo == current:
                 next_repo = dep.to_repo
-                dep_description = dep.description
                 break
 
         if not next_repo or next_repo in visited:
