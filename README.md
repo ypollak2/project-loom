@@ -1,16 +1,36 @@
-# Project Loom
+# Project Loom — Multi-Repo AI Workspace Generator
 
-Unified AI-ready workspace generator for multi-repo projects. Generate a structured `meta-workspace/` with symlinks, cross-repo context docs, and first-class configurations for Claude Code, Codex, Cursor, and Aider.
+[![CI Status](https://github.com/ypollak2/project-loom/actions/workflows/ci.yml/badge.svg)](https://github.com/ypollak2/project-loom/actions)
+[![Tests](https://img.shields.io/badge/tests-34%20passing-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-47%25-yellow)](tests/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Motivation
+Project Loom unifies multi-repository development by generating AI-ready workspace configurations. Define your repos, dependencies, and impact zones once—Loom generates everything: symlinks, orchestration scripts, and AI tool configs (Claude Code, Codex, Cursor, Aider).
 
-When developing with multiple interconnected repositories, you need:
-- **Single source of truth** for repo relationships and dependencies
-- **Centralized AI context** that multiple AI tools can read
-- **Coordinated workflows** for synchronized commits across repos
-- **Impact zone tracking** to understand cross-repo consequences
+## Why Project Loom?
 
-Project Loom provides all of this via a single `loom.yaml` config file.
+When you're working across 3+ repositories:
+
+- **Scattered configs** — Claude Code, Codex, Cursor, Aider each need different markdown formats
+- **Manual orchestration** — Running tests/installs across repos is shell-script spaghetti
+- **Lost context** — Which files are risky to change? Which repos will break?
+- **Repeated setup** — Every team member re-discovers the same patterns
+
+**Loom solves this:**
+
+```bash
+# Define your workspace once
+loom init
+
+# Apply to your local machine
+loom apply
+
+# Everything works together
+loom install          # Install all repos
+loom test-all         # Run all tests
+loom status           # Git status across workspace
+loom sync-commit "bugfix: auth token expires correctly"  # Atomic multi-repo commit
+```
 
 ## Quick Start
 
@@ -66,53 +86,78 @@ loom doctor
 loom sync-commit "message"
 ```
 
+## Core Commands
+
+| Command | Purpose |
+|---------|---------|
+| `loom init` | Interactive wizard to create `loom.yaml` |
+| `loom apply [yaml]` | Clone repos, create symlinks, generate AI configs |
+| `loom validate [yaml]` | Validate YAML against schema |
+| `loom install` | Run install commands in all repos |
+| `loom test-all` | Run tests in all repos |
+| `loom doctor` | Run health checks in all repos |
+| `loom status` | Git status across all repos |
+| `loom diff` | Git diffs across all repos |
+| `loom pull` | Git pull --ff-only across all repos |
+| `loom logs [--count N]` | Recent commits across all repos |
+| `loom sync-commit <msg>` | Commit to all dirty repos with shared trailer |
+
 ## Configuration (`loom.yaml`)
 
-### Schema
+### Complete Schema
 
 ```yaml
-name: workspace-name
-description: "Description of your workspace"
+# Workspace metadata
+name: my-workspace              # Workspace name (required)
+description: "Your description" # Workspace description (required)
 
+# Repositories
 repos:
-  - name: repo-name
-    url: https://github.com/user/repo
-    local_path: ~/Projects/repo  # optional; defaults to ~/Projects/<name>
-    role: "Role in the ecosystem"
-    language: python  # or typescript, golang, rust
-    test_command: "pytest"
-    install_command: "pip install -e ."
-    doctor_command: "python -m myapp doctor"
+  - name: api                   # Unique repo name
+    url: https://github.com/user/api
+    role: backend               # Role in ecosystem
+    language: python            # python | typescript | golang | rust
+    local_path: ~/Projects/api  # Optional; defaults to ~/Projects/<name>
+    install_command: pip install -e .
+    test_command: pytest
+    doctor_command: python -m app doctor
 
+# Cross-repo dependencies
 dependencies:
-  - from: repo-a
-    to: repo-b
-    description: "repo-b depends on repo-a"
+  - from: client
+    to: api
+    description: REST API calls
 
+# Cross-repo impact zones
 impact_zones:
   - id: IZ-001
-    name: "Feature Name"
-    risk: HIGH  # HIGH, MEDIUM, LOW
+    name: Auth Flow Changes
+    risk: HIGH                  # HIGH | MEDIUM | LOW
     source:
-      repo: repo-a
-      file: src/module.py
-      function: critical_function
+      repo: api
+      file: src/auth.py
+      function: verify_token
     target:
-      repo: repo-b
-      file: src/other.py
-      tool: mcp_tool_name
-    trigger: "When this zone is triggered"
+      repo: client
+    trigger: When auth middleware changes
+    shared_env:                 # Shared environment variables
+      - AUTH_SECRET
+      - JWT_EXPIRY
 
+# AI tool configuration flags
 ai_tools:
-  claude_code: true
-  codex: false
-  cursor: false
-  aider: false
+  claude_code: true             # Generate .claudecode.md
+  codex: false                  # Generate .codex-plugin/
+  cursor: false                 # Generate .cursorrules
+  aider: false                  # Generate AGENTS.md
 ```
 
-### Example: llm-router + chronicle
+### Real-World Example
 
-See `examples/llm-router-chronicle/loom.yaml` for a complete reference implementation with seven impact zones.
+See `examples/llm-router-chronicle/loom.yaml` for a complete implementation with:
+- 2 repos (Go + Python services)
+- 1 dependency (REST API)
+- 7 impact zones tracking auth, caching, and protocol changes
 
 ## Generated Artifacts
 
