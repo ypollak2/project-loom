@@ -14,9 +14,9 @@ repos:
     url: https://github.com/ypollak2/chronicle
     role: "The Memory — extracts architectural decisions from git history into .lore/"
     language: typescript
-    test_command: "npm test"
-    install_command: "npm ci && npm run build"
-    doctor_command: "npx chronicle doctor"
+    test_command: "pytest tests/ -v"
+    install_command: "pip install -e ."
+    doctor_command: "python -m chronicle doctor"
 
 dependencies:
   - from: llm-router

@@ -117,7 +117,7 @@ def _prompt_repo(index: int) -> Repo | None:
     ).ask()
 
     doctor_command = questionary.text(
-        "  Health check command (optional, e.g., 'npm run doctor'):",
+        "  Health check command (optional, e.g., 'pytest --health' or './scripts/doctor'):",
         default="",
     ).ask()
 

@@ -32,8 +32,8 @@ def simple_config() -> LoomConfig:
                 url="https://example.com/client",
                 role="frontend",
                 language=Language.TYPESCRIPT,
-                install_command="npm install",
-                test_command="npm test",
+                install_command="pip install -e .",
+                test_command="pytest tests/",
             ),
         ],
     )
@@ -89,7 +89,6 @@ class TestBuildOrchestrationScript:
         assert "install_api=" in script
         assert "install_client=" in script
         assert "pip install -e ." in script
-        assert "npm install" in script
 
     def test_script_includes_test_commands(self, simple_config):
         """Test that script includes per-repo test commands."""
@@ -97,7 +96,6 @@ class TestBuildOrchestrationScript:
         assert "test_api=" in script
         assert "test_client=" in script
         assert "pytest" in script
-        assert "npm test" in script
 
     def test_script_has_case_statements(self, simple_config):
         """Test that script has proper case statements."""

@@ -36,7 +36,7 @@ def simple_config() -> LoomConfig:
                 url="https://example.com/client",
                 role="frontend",
                 language=Language.TYPESCRIPT,
-                test_command="npm test",
+                test_command="pytest tests/",
             ),
         ],
         impact_zones=[
