@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from loom.config import Language, LoomConfig, RiskLevel, Repo
+from loom.config import Boundary, Language, LoomConfig, RiskLevel, Repo
 
 
 class TestRepo:
@@ -171,3 +171,71 @@ repos:
         assert loaded.description == config.description
         assert len(loaded.repos) == 1
         assert loaded.repos[0].test_command == "pytest"
+
+
+class TestBoundary:
+    """Tests for Boundary model."""
+
+    def test_boundary_creation(self):
+        """Test creating a boundary."""
+        boundary = Boundary(
+            from_repo="client",
+            to_repo="api",
+            interface="REST API",
+            protocol="HTTP",
+        )
+        assert boundary.from_repo == "client"
+        assert boundary.to_repo == "api"
+        assert boundary.protocol == "HTTP"
+
+    def test_boundary_with_test_command(self):
+        """Test boundary with test command."""
+        boundary = Boundary(
+            from_repo="client",
+            to_repo="api",
+            interface="REST API",
+            protocol="HTTP",
+            test_command="pytest tests/integration",
+        )
+        assert boundary.test_command == "pytest tests/integration"
+
+    def test_boundary_roundtrip_yaml(self, tmp_path):
+        """Test boundary save and load roundtrip."""
+        yaml_file = tmp_path / "loom.yaml"
+
+        config = LoomConfig(
+            name="Test",
+            description="Test workspace",
+            repos=[
+                Repo(
+                    name="client",
+                    url="https://example.com/client",
+                    role="frontend",
+                    language=Language.TYPESCRIPT,
+                ),
+                Repo(
+                    name="api",
+                    url="https://example.com/api",
+                    role="backend",
+                    language=Language.PYTHON,
+                ),
+            ],
+            boundaries=[
+                Boundary(
+                    from_repo="client",
+                    to_repo="api",
+                    interface="REST API",
+                    protocol="HTTP",
+                    test_command="pytest tests/integration",
+                )
+            ],
+        )
+
+        config.save_yaml(yaml_file)
+        loaded = LoomConfig.load_yaml(yaml_file)
+
+        assert loaded.boundaries is not None
+        assert len(loaded.boundaries) == 1
+        assert loaded.boundaries[0].from_repo == "client"
+        assert loaded.boundaries[0].interface == "REST API"
+        assert loaded.boundaries[0].test_command == "pytest tests/integration"

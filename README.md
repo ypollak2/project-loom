@@ -1,8 +1,8 @@
 # Project Loom — Multi-Repo AI Workspace Generator
 
 [![CI Status](https://github.com/ypollak2/project-loom/actions/workflows/ci.yml/badge.svg)](https://github.com/ypollak2/project-loom/actions)
-[![Tests](https://img.shields.io/badge/tests-34%20passing-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-47%25-yellow)](tests/)
+[![Tests](https://img.shields.io/badge/tests-79%20passing-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Project Loom unifies multi-repository development by generating AI-ready workspace configurations. Define your repos, dependencies, and impact zones once—Loom generates everything: symlinks, orchestration scripts, and AI tool configs (Claude Code, Codex, Cursor, Aider).

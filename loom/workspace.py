@@ -1,6 +1,8 @@
 """Core workspace setup logic — clone, symlink, and generate configurations."""
 
+import json
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 from rich.console import Console
@@ -11,6 +13,11 @@ from loom.generators import (
     generate_claude_code,
     generate_codex,
     generate_cursor,
+    generate_dependency_graph,
+    generate_env_setup,
+    generate_file_ownership,
+    generate_git_context,
+    generate_session_templates,
 )
 
 console = Console()
@@ -38,6 +45,12 @@ def apply_workspace(config: LoomConfig, workspace_path: Path | str = None) -> No
     # Generate AI tool configurations
     _generate_ai_configs(config, workspace_path)
 
+    # Generate Claude context files (v0.3.0)
+    _generate_claude_context_files(config, workspace_path)
+
+    # Generate MCP server config (v0.4.0)
+    _generate_mcp_config(workspace_path)
+
     # Generate orchestration script
     _generate_orchestration_script(config, workspace_path)
 
@@ -54,6 +67,7 @@ def _setup_workspace_dirs(workspace_path: Path) -> None:
         workspace_path / "services",
         workspace_path / "configs",
         workspace_path / "scripts",
+        workspace_path / ".claude",
     ]
     for dir_path in dirs:
         dir_path.mkdir(parents=True, exist_ok=True)
@@ -130,6 +144,64 @@ def _generate_ai_configs(config: LoomConfig, workspace_path: Path) -> None:
         file_path = workspace_path / "AGENTS.md"
         file_path.write_text(content)
         console.print(f"[green]✓ Generated AGENTS.md[/green]")
+
+
+def _generate_claude_context_files(config: LoomConfig, workspace_path: Path) -> None:
+    """Generate Claude context files in .claude/ directory (v0.3.0).
+
+    Args:
+        config: LoomConfig
+        workspace_path: Target workspace path
+    """
+    claude_dir = workspace_path / ".claude"
+    console.print("[blue]Generating Claude context files...[/blue]")
+
+    # Generate file-ownership.json
+    content = generate_file_ownership(config)
+    (claude_dir / "file-ownership.json").write_text(content)
+    console.print(f"[green]✓ Generated .claude/file-ownership.json[/green]")
+
+    # Generate git-context.json with live git state
+    content = generate_git_context(config, workspace_path)
+    git_context = json.loads(content)
+    git_context["generated_at"] = datetime.now().isoformat()
+    (claude_dir / "git-context.json").write_text(json.dumps(git_context, indent=2))
+    console.print(f"[green]✓ Generated .claude/git-context.json[/green]")
+
+    # Generate session-templates.json
+    content = generate_session_templates(config)
+    (claude_dir / "session-templates.json").write_text(content)
+    console.print(f"[green]✓ Generated .claude/session-templates.json[/green]")
+
+    # Generate env-setup.sh
+    content = generate_env_setup(config)
+    env_script = claude_dir / "env-setup.sh"
+    env_script.write_text(content)
+    env_script.chmod(0o755)
+    console.print(f"[green]✓ Generated .claude/env-setup.sh[/green]")
+
+
+def _generate_mcp_config(workspace_path: Path) -> None:
+    """Generate .mcp.json for Claude Code MCP server integration (v0.4.0).
+
+    Args:
+        workspace_path: Target workspace path
+    """
+    console.print("[blue]Generating MCP server config...[/blue]")
+
+    # Create .mcp.json in workspace root
+    mcp_config = {
+        "mcpServers": {
+            "loom": {
+                "command": "loom",
+                "args": ["serve", "loom.yaml"],
+            }
+        }
+    }
+
+    mcp_path = workspace_path / ".mcp.json"
+    mcp_path.write_text(json.dumps(mcp_config, indent=2))
+    console.print(f"[green]✓ Generated .mcp.json[/green]")
 
 
 def _generate_orchestration_script(config: LoomConfig, workspace_path: Path) -> None:
@@ -270,3 +342,8 @@ def _generate_documentation(config: LoomConfig, workspace_path: Path) -> None:
         json.dumps(dependency_graph, indent=2)
     )
     console.print(f"[green]✓ Generated configs/dependency-graph.json[/green]")
+
+    # Generate dependency graph HTML visualization (v0.5.0)
+    html_content = generate_dependency_graph(config)
+    (config_dir / "dependency-graph.html").write_text(html_content)
+    console.print(f"[green]✓ Generated configs/dependency-graph.html[/green]")

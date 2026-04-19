@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-04-19
+
+### Added
+
+**Impact Analysis CLI Commands (v0.5.0):**
+- `loom analyze-impact <file>` — Analyze blast radius of file changes with impact zone table and affected repos
+- `loom trace-dependency <repo>` — Trace transitive dependency chain with impact zones along the path
+- `loom check-boundary <repo1> <repo2>` — Validate inter-repo boundaries and run integration tests
+  - Supports optional `test_command` per boundary
+  - Rich table output for boundary status
+
+**Boundary Model & Configuration:**
+- `Boundary` schema in `loom/config.py` with `from_repo`, `to_repo`, `interface`, `protocol`, and optional `test_command`
+- Full YAML serialization support for boundaries
+
+**Analyzer Module (`loom/analyzer.py`):**
+- Pure analysis functions for reuse across CLI and MCP server (DRY principle)
+- `get_impact_zones(config, file)` — Find zones affecting a file
+- `find_dependents(config, repo)` — Find repos that depend on a repo
+- `blast_radius(config, file)` — Calculate 0-10 impact score (zones × risk weight)
+- `trace_chain(config, repo)` — Trace transitive dependency chains
+- `check_boundaries(config, from_repo, to_repo)` — Get boundaries between repos
+
+**Dependency Graph Visualization:**
+- `loom/generators/dependency_graph.py` — Self-contained HTML visualization
+  - SVG nodes colored by language (Python=blue, TypeScript=green, Go=cyan, Rust=orange)
+  - Directional edges with dependency labels
+  - Impact zone count badges on edges
+  - Hover tooltips for zone details
+  - Legend with language color mapping
+- Automatically generated in `configs/dependency-graph.html` by `loom apply`
+
+**Test Suite (79 tests, 85% coverage):**
+- `tests/test_analyzer.py` — 22 tests for all analyzer functions
+  - `TestGetImpactZones` — File matching, partial paths, empty zones
+  - `TestFindDependents` — Direct dependents, zone counting
+  - `TestBlastRadius` — Score calculation, risk weights, capping
+  - `TestTraceChain` — Linear chains, zones along path
+  - `TestCheckBoundaries` — Boundary matching and retrieval
+- `tests/test_generators.py` — 8 tests for dependency graph generator
+  - HTML structure validation, repo/dependency inclusion, language colors
+- `tests/test_config.py` — 3 tests for Boundary model
+  - Creation, test commands, YAML roundtrip serialization
+
+### Changed
+
+**Code Refactoring:**
+- `loom/mcp_server.py` — Refactored `loom_get_impact_zones` and `loom_find_dependents` to delegate to `analyzer.py`
+  - Eliminates duplicate logic between CLI and MCP tools
+  - Improves maintainability and testability
+
+**Workspace Generation:**
+- `loom/workspace.py` — Wire dependency graph generation into `_generate_documentation`
+
+**CLI Imports:**
+- `loom/cli.py` — Added analyzer and Rich table imports
+
+## [0.4.0] — 2026-04-19
+
+### Added
+
+**MCP Server Implementation (v0.4.0):**
+- FastMCP-based server for Claude Code integration
+- 6 tools: `loom_get_impact_zones`, `loom_find_dependents`, `loom_validate_change`, `loom_workspace_status`, `loom_run_affected_tests`, `loom_get_session_template`
+- `loom serve` command to start MCP server
+- `.mcp.json` generation for Claude Code integration
+
+### Changed
+
+- `loom/mcp_server.py` — New MCP server implementation with FastMCP
+- `loom/workspace.py` — Added MCP configuration generation
+
+## [0.3.0] — 2026-04-19
+
+### Added
+
+**AI Context Generators (v0.3.0):**
+- `loom/generators/file_ownership.py` — JSON file ownership tracking
+- `loom/generators/git_context.py` — Live git state snapshot
+- `loom/generators/session_templates.py` — Multi-repo workflow templates
+- `loom/generators/env_setup.py` — Environment setup script with shared_env validation
+
+**Generator Updates:**
+- `generate_claude_code` — Enhanced with critical files section and pre-flight checklist
+- All generators now include risk-aware context from impact zones
+
+**Test Suite:**
+- `tests/test_generators.py` — Extended with v0.3.0 generator tests
+
+### Changed
+
+- `loom/workspace.py` — Added `_generate_claude_context_files` function
+- `loom/cli.py` — Updated serve command help text with all 6 tools listed
+
 ## [0.2.0] — 2026-04-19
 
 ### Added

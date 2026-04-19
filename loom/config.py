@@ -25,6 +25,14 @@ class RiskLevel(str, Enum):
     HIGH = "HIGH"
 
 
+class FileRiskOverride(BaseModel):
+    """Manual risk annotation for specific files."""
+
+    glob: str = Field(..., description="Glob pattern (e.g. src/auth.py)")
+    risk: RiskLevel = Field(..., description="Risk level for matching files")
+    notes: Optional[str] = Field(None, description="Why this file is risky")
+
+
 class Repo(BaseModel):
     """Repository configuration."""
 
@@ -38,6 +46,9 @@ class Repo(BaseModel):
     test_command: Optional[str] = Field(None, description="Test command")
     install_command: Optional[str] = Field(None, description="Install command")
     doctor_command: Optional[str] = Field(None, description="Health check command")
+    file_overrides: Optional[list[FileRiskOverride]] = Field(
+        None, description="Manual file risk annotations"
+    )
 
     def resolve_local_path(self) -> Path:
         """Resolve local_path, defaulting to ~/Projects/<name>."""
@@ -52,6 +63,16 @@ class Dependency(BaseModel):
     from_repo: str = Field(alias="from", description="Source repo name")
     to_repo: str = Field(alias="to", description="Target repo name")
     description: str = Field(..., description="Dependency description")
+
+
+class Boundary(BaseModel):
+    """Cross-repo boundary with interface and protocol."""
+
+    from_repo: str = Field(..., description="Source repo name")
+    to_repo: str = Field(..., description="Target repo name")
+    interface: str = Field(..., description="Interface file or name")
+    protocol: str = Field(..., description="Protocol (REST, gRPC, event, etc.)")
+    test_command: Optional[str] = Field(None, description="Test command verifying this boundary")
 
 
 class SourceTarget(BaseModel):
@@ -92,6 +113,7 @@ class LoomConfig(BaseModel):
     description: str = Field(..., description="Workspace description")
     repos: list[Repo] = Field(..., description="Repository list")
     dependencies: Optional[list[Dependency]] = None
+    boundaries: Optional[list[Boundary]] = None
     impact_zones: Optional[list[ImpactZone]] = None
     ai_tools: Optional[AITools] = Field(default_factory=AITools)
 

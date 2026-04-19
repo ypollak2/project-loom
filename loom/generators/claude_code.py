@@ -20,6 +20,10 @@ def generate_claude_code(config: LoomConfig) -> str:
         "\n---\n",
         _generate_impact_zones_table(config),
         "\n---\n",
+        _generate_critical_files(config),
+        "\n---\n",
+        _generate_preflight_checklist(config),
+        "\n---\n",
         _generate_quick_reference(config),
     ]
     return "".join(parts)
@@ -100,6 +104,63 @@ def _generate_impact_zones_table(config: LoomConfig) -> str:
     return "\n".join(lines)
 
 
+
+def _generate_critical_files(config: LoomConfig) -> str:
+    """Generate critical files table for high-risk zones."""
+    lines = ["## Critical Files\n"]
+
+    critical_files = []
+    for zone in config.impact_zones or []:
+        if zone.risk.value == "HIGH":
+            if zone.source and zone.source.file:
+                critical_files.append({
+                    "file": zone.source.file,
+                    "zone": zone.id,
+                    "zone_name": zone.name,
+                    "note": f"Triggers {zone.name}",
+                })
+            if zone.target and zone.target.file:
+                critical_files.append({
+                    "file": zone.target.file,
+                    "zone": zone.id,
+                    "zone_name": zone.name,
+                    "note": f"Affected by {zone.name}",
+                })
+
+    if critical_files:
+        lines.append(
+            "| File | Zone ID | Zone Name | Note |"
+            "\n|------|---------|-----------|------|"
+        )
+        for f in critical_files:
+            lines.append(
+                f"| `{f['file']}` | {f['zone']} | {f['zone_name']} | {f['note']} |"
+            )
+    else:
+        lines.append("No high-risk files defined.")
+
+    return "\n".join(lines)
+
+
+def _generate_preflight_checklist(config: LoomConfig) -> str:
+    """Generate pre-flight checklist."""
+    lines = ["## Pre-Flight Checklist\n"]
+    lines.append("Before making changes to critical files:\n")
+    lines.append("- [ ] Read the impact zone description for the file you're editing")
+    lines.append("- [ ] Check that shared environment variables are set")
+
+    # Add per-zone checks for zones with shared_env
+    zones_with_env = [z for z in (config.impact_zones or []) if z.shared_env]
+    if zones_with_env:
+        lines.append("- [ ] Verify environment setup:")
+        for zone in zones_with_env:
+            lines.append(f"  - [ ] {zone.name}: Run `source .claude/env-setup.sh`")
+
+    lines.append("- [ ] Run tests in affected repositories before committing")
+    lines.append("- [ ] Use `loom sync-commit` to maintain consistency across repos")
+
+    return "\n".join(lines)
+
 def _generate_quick_reference(config: LoomConfig) -> str:
     """Generate quick reference CLI commands."""
     lines = ["## Quick Reference\n"]
@@ -120,6 +181,19 @@ def _generate_quick_reference(config: LoomConfig) -> str:
     lines.append("# Make a synchronized commit across all dirty repos")
     lines.append("loom sync-commit 'your commit message'")
     lines.append("```")
+
+    lines.append("\n### Quick Recipes\n")
+    lines.append("Session templates for common workflows are available in `.claude/session-templates.json`:")
+    lines.append("- **Full Stack Testing** — Run tests across all repositories")
+    lines.append("- **Setup Workspace** — Fresh installation of all repositories")
+    lines.append("- **Synchronized Commit** — Commit changes across multiple dirty repositories")
+    
+    # Add HIGH-risk zone templates
+    high_risk_zones = [z for z in (config.impact_zones or []) if z.risk.value == "HIGH"]
+    if high_risk_zones:
+        lines.append("- **High-Risk Zone Updates** — Templates for critical impact zones:")
+        for zone in high_risk_zones:
+            lines.append(f"  - {zone.name} ({zone.id})")
 
     lines.append("\n### Repository Paths\n")
     for repo in config.repos:

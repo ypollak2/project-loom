@@ -161,3 +161,106 @@ class TestBuildOrchestrationScript:
         assert "set -e" in script
         assert "esac" in script
         assert script.count("case") == script.count("esac")
+
+
+class TestGenerateClaudeContextFiles:
+    """Tests for v0.3.0 Claude context file generation."""
+
+    def test_claude_context_directory_created(self, simple_config, tmp_path):
+        """Test that .claude/ directory is created during workspace setup."""
+        from loom.workspace import _setup_workspace_dirs
+
+        workspace_path = tmp_path / "workspace"
+        _setup_workspace_dirs(workspace_path)
+
+        assert (workspace_path / ".claude").exists()
+        assert (workspace_path / ".claude").is_dir()
+
+    def test_generate_claude_context_files(self, simple_config, tmp_path):
+        """Test that all Claude context files are generated."""
+        from loom.workspace import _generate_claude_context_files
+        import json
+
+        workspace_path = tmp_path / "workspace"
+        workspace_path.mkdir(parents=True)
+        (workspace_path / ".claude").mkdir()
+
+        _generate_claude_context_files(simple_config, workspace_path)
+
+        # Verify all files are created
+        assert (workspace_path / ".claude" / "file-ownership.json").exists()
+        assert (workspace_path / ".claude" / "git-context.json").exists()
+        assert (workspace_path / ".claude" / "session-templates.json").exists()
+        assert (workspace_path / ".claude" / "env-setup.sh").exists()
+
+    def test_env_setup_script_is_executable(self, simple_config, tmp_path):
+        """Test that env-setup.sh is executable."""
+        from loom.workspace import _generate_claude_context_files
+        import stat
+
+        workspace_path = tmp_path / "workspace"
+        workspace_path.mkdir(parents=True)
+        (workspace_path / ".claude").mkdir()
+
+        _generate_claude_context_files(simple_config, workspace_path)
+
+        script_path = workspace_path / ".claude" / "env-setup.sh"
+        assert script_path.exists()
+        # Check if executable
+        assert script_path.stat().st_mode & stat.S_IXUSR
+
+    def test_git_context_includes_timestamp(self, simple_config, tmp_path):
+        """Test that git-context.json includes generated_at timestamp."""
+        from loom.workspace import _generate_claude_context_files
+        import json
+
+        workspace_path = tmp_path / "workspace"
+        workspace_path.mkdir(parents=True)
+        (workspace_path / ".claude").mkdir()
+
+        _generate_claude_context_files(simple_config, workspace_path)
+
+        context_path = workspace_path / ".claude" / "git-context.json"
+        data = json.loads(context_path.read_text())
+        assert "generated_at" in data
+        assert data["generated_at"] is not None
+        assert len(data["generated_at"]) > 0
+
+
+class TestGenerateMCPConfig:
+    """Tests for v0.4.0 MCP server configuration generation."""
+
+    def test_mcp_config_is_generated(self, simple_config, tmp_path):
+        """Test that .mcp.json is generated."""
+        from loom.workspace import _generate_mcp_config
+        import json
+
+        workspace_path = tmp_path / "workspace"
+        workspace_path.mkdir(parents=True)
+
+        _generate_mcp_config(workspace_path)
+
+        mcp_path = workspace_path / ".mcp.json"
+        assert mcp_path.exists()
+
+        # Verify content
+        config = json.loads(mcp_path.read_text())
+        assert "mcpServers" in config
+        assert "loom" in config["mcpServers"]
+
+    def test_mcp_config_has_correct_structure(self, simple_config, tmp_path):
+        """Test that MCP config has correct structure."""
+        from loom.workspace import _generate_mcp_config
+        import json
+
+        workspace_path = tmp_path / "workspace"
+        workspace_path.mkdir(parents=True)
+
+        _generate_mcp_config(workspace_path)
+
+        mcp_path = workspace_path / ".mcp.json"
+        config = json.loads(mcp_path.read_text())
+
+        loom_server = config["mcpServers"]["loom"]
+        assert loom_server["command"] == "loom"
+        assert loom_server["args"] == ["serve", "loom.yaml"]
