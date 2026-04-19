@@ -1,0 +1,113 @@
+name: llm-router-chronicle
+description: "LLM routing dispatcher + decision memory layer — unified workspace for coordinated development"
+
+repos:
+  - name: llm-router
+    url: https://github.com/ypollak2/llm-router
+    role: "The Dispatcher — routes LLM API calls, manages budget, selects models"
+    language: python
+    test_command: "pytest -x -m 'not slow and not requires_api_keys and not requires_ollama'"
+    install_command: "uv pip install -e '.[dev]'"
+    doctor_command: "python -m llm_router.cli doctor"
+
+  - name: chronicle
+    url: https://github.com/ypollak2/chronicle
+    role: "The Memory — extracts architectural decisions from git history into .lore/"
+    language: typescript
+    test_command: "npm test"
+    install_command: "npm ci && npm run build"
+    doctor_command: "npx chronicle doctor"
+
+dependencies:
+  - from: llm-router
+    to: chronicle
+    description: "llm-router logs routing decisions to chronicle's MCP tools"
+
+impact_zones:
+  - id: IZ-001
+    name: "Decision Logging"
+    risk: HIGH
+    source:
+      repo: llm-router
+      file: "src/llm_router/router.py"
+      function: "_dispatch_with_fallback"
+    target:
+      repo: chronicle
+      file: "packages/mcp/src/server.ts"
+      tool: "chronicle_log_decision"
+    trigger: "Every successful routing dispatch"
+
+  - id: IZ-002
+    name: "Session Memory"
+    risk: MEDIUM
+    source:
+      repo: llm-router
+      file: "src/llm_router/context.py"
+    target:
+      repo: chronicle
+      file: "packages/mcp/src/server.ts"
+      tool: "chronicle_save_session"
+    trigger: "Session end hook"
+
+  - id: IZ-003
+    name: "Provider Risk Tracking"
+    risk: MEDIUM
+    source:
+      repo: llm-router
+      file: "src/llm_router/health.py"
+    target:
+      repo: chronicle
+      tool: "chronicle_get_risks"
+    trigger: "Provider circuit breaker state changes"
+
+  - id: IZ-004
+    name: "Context Injection"
+    risk: LOW
+    source:
+      repo: chronicle
+      tool: "chronicle_get_context"
+    target:
+      repo: llm-router
+      file: "src/llm_router/hooks/session-start.py"
+    trigger: "Session start"
+
+  - id: IZ-005
+    name: "LLM Provider Routing"
+    risk: HIGH
+    status: "not_yet_implemented"
+    source:
+      repo: llm-router
+      file: "src/llm_router/providers.py"
+      function: "call_llm"
+    target:
+      repo: chronicle
+      file: "packages/cli/src/llm.ts"
+      function: "detectProvider"
+    trigger: "If chronicle routes through llm-router"
+
+  - id: IZ-006
+    name: "Budget Schema"
+    risk: HIGH
+    status: "not_yet_implemented"
+    source:
+      repo: llm-router
+      file: "src/llm_router/cost.py"
+    target:
+      repo: chronicle
+      file: "packages/core/src/extractor.ts"
+    trigger: "Any ETL reading llm-router SQLite into chronicle format"
+
+  - id: IZ-007
+    name: "Shared Environment Variables"
+    risk: MEDIUM
+    shared_env:
+      - ANTHROPIC_API_KEY
+      - OPENAI_API_KEY
+      - GEMINI_API_KEY
+    trigger: "Key rotation / environment setup"
+
+ai_tools:
+  claude_code: true
+  codex: false
+  cursor: false
+  aider: false
